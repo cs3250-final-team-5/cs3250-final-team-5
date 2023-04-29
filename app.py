@@ -57,7 +57,7 @@ def index():
         name = request.form.get("name")
         join = request.form.get("join", False)
             
-        if join != False:
+        if join is not False:
             room = 1234
             rooms[room] = {"members": 0, "messages": []}
             session["room"] = room
