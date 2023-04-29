@@ -3,4 +3,5 @@ Flask-SocketIO
 eventlet
 gunicorn
 redis
-flask-socketio-gevent
+gevent
+gevent-websocket
