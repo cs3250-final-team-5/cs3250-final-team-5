@@ -43,15 +43,16 @@
     createMessage(data.name, data.message);
   });
 
-  const sendBtn = document.getElementById("send-btn");
-  sendBtn.addEventListener("click", sendMessage);
-
   const sendMessage = () => {
     const message = document.getElementById("message");
     if (message.value == "") return;
     socketio.emit("message", { name: "{{ name }}", message: message.value });
     message.value = "";
   };
+  
+  const sendBtn = document.getElementById("send-btn");
+  sendBtn.addEventListener("click", sendMessage);
+
 
 </script>
 {% endblock %}
