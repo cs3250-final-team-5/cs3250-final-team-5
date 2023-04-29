@@ -1,7 +1,15 @@
 {% extends 'base.html' %} {% block content %}
 <div class="message-box">
   <h1>Welcome to the ChatCafe Lounge, {{ name }}!</h1>
-  <div class="messages" id="messages"></div>
+  <div class="messages" id="messages">
+    {% for msg in messages %}
+    <div class="text">
+      <span>
+        <strong>{{msg.name}}</strong>: {{msg.message}}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
   <div class="inputs">
     <input
       type="text"
@@ -42,8 +50,4 @@
     message.value = "";
   };
 </script>
-{% for msg in messages %}
-<script type="text/javascript">
-  createMessage("{{msg.name}}", "{{msg.message}}");
-</script>
-{% endfor %} {% endblock %}
+{% endblock %}
