@@ -43,11 +43,12 @@
     createMessage(data.name, data.message);
   });
 
-  const sendMessage = () => {
-    const message = document.getElementById("message");
-    if (message.value == "") return;
-    socketio.emit("message", { data: message.value });
-    message.value = "";
-  };
+const sendMessage = () => {
+  const message = document.getElementById("message");
+  if (message.value == "") return;
+  socketio.emit("message", { name: "{{ name }}", message: message.value });
+  message.value = "";
+};
+
 </script>
 {% endblock %}
