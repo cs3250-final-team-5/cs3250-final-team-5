@@ -6,7 +6,7 @@ import os
 
 # Create app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['SECRET_KEY'] = 'key1234'
 socketio = SocketIO(app)
 
 
@@ -55,7 +55,7 @@ def index():
         name = request.form.get("name")
         join = request.form.get("join", False)
             
-        if join is not False:
+        if join != False:
             room = 1234
             rooms[room] = {"members": 0, "messages": []}
             session["room"] = room
