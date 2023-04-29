@@ -40,6 +40,7 @@
   };
 
   socketio.on("message", (data) => {
+    console.log('creating message', name, data);
     createMessage(data.name, data.message);
   });
 
@@ -49,7 +50,7 @@
     socketio.emit("message", { name: "{{ name }}", message: message.value });
     message.value = "";
   };
-  
+
   const sendBtn = document.getElementById("send-btn");
   sendBtn.addEventListener("click", sendMessage);
 
