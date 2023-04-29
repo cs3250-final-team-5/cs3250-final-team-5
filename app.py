@@ -3,10 +3,12 @@ from flask_socketio import SocketIO
 from flask_socketio import join_room, leave_room, send
 import random
 from string import ascii_uppercase
+import os
+
 
 # Create app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'key123'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback_key')
 socketio = SocketIO(app)
 
 
@@ -115,4 +117,5 @@ def disconnect():
 
 # Run app
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', debug=True)
+    socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)), debug=True)
+
