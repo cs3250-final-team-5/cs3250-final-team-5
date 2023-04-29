@@ -90,11 +90,12 @@ def message(data):
         "name": session.get("name"),
         "message": data["data"]
     }
-    send(content, to=room)
+    socketio.emit('message', content, room=room)
     messages = json.loads(redis_store.hget(f"room:{room}", "messages"))
     messages.append(content)
     redis_store.hset(f"room:{room}", "messages", json.dumps(messages))
     print(f"{session.get('name')} said: {data['data']}")
+
 
 @socketio.on("connect")
 def connect(auth):
