@@ -40,17 +40,18 @@
   };
 
   socketio.on("message", (data) => {
-  console.log('creating message', name, data);
-  createMessage(data["name"], data["message"]);
+    createMessage(data.name, data.message);
   });
 
+  const sendBtn = document.getElementById("send-btn");
+  sendBtn.addEventListener("click", sendMessage);
 
-const sendMessage = () => {
-  const message = document.getElementById("message");
-  if (message.value == "") return;
-  socketio.emit("message", { name: "{{ name }}", message: message.value });
-  message.value = "";
-};
+  const sendMessage = () => {
+    const message = document.getElementById("message");
+    if (message.value == "") return;
+    socketio.emit("message", { name: "{{ name }}", message: message.value });
+    message.value = "";
+  };
 
 </script>
 {% endblock %}
