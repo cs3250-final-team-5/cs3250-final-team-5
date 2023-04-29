@@ -5,6 +5,7 @@ import random
 from string import ascii_uppercase
 import os 
 import redis
+import json
 
 # Create app
 app = Flask(__name__)
@@ -64,7 +65,7 @@ def index():
         if join != False:
             room = 1234
             redis_store.hset(f"room:{room}", "members", 0)
-            redis_store.lpush(f"room:{room}:messages", [])
+            redis_store.hset(f"room:{room}", "messages", json.dumps([]))
             session["room"] = room
             session["name"] = name
         return redirect(url_for("room"))
@@ -75,8 +76,7 @@ def index():
 @app.route("/chat")
 def room():
     room = session.get("room")
-    messages = redis_store.lrange(f"room:{room}:messages", 0, -1)
-    messages = [eval(msg.decode("utf-8")) for msg in messages]
+    messages = json.loads(redis_store.hget(f"room:{room}", "messages"))
 
     return render_template("chat.html", code=room, messages=messages)
 
@@ -91,7 +91,9 @@ def message(data):
         "message": data["data"]
     }
     send(content, to=room)
-    redis_store.rpush(f"room:{room}:messages", str(content))
+    messages = json.loads(redis_store.hget(f"room:{room}", "messages"))
+    messages.append(content)
+    redis_store.hset(f"room:{room}", "messages", json.dumps(messages))
     print(f"{session.get('name')} said: {data['data']}")
 
 @socketio.on("connect")
