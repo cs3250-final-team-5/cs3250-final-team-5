@@ -4,6 +4,7 @@ from flask_socketio import join_room, leave_room, send
 import random
 from string import ascii_uppercase
 import os 
+import redis
 
 # Create app
 app = Flask(__name__)
