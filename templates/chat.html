@@ -5,10 +5,10 @@
     {% for msg in messages %}
     <div class="text">
       <span>
-        <strong>{{msg.name}}</strong>: {{msg.message}}
+        <strong>{{msg["name"]}}</strong>: {{msg["message"]}}
       </span>
     </div>
-    {% endfor %}
+    {% endfor %}    
   </div>
   <div class="inputs">
     <input

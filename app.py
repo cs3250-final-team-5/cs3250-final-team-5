@@ -96,7 +96,6 @@ def message(data):
     redis_store.hset(f"room:{room}", "messages", json.dumps(messages))
     print(f"{session.get('name')} said: {data['data']}")
 
-
 @socketio.on("connect")
 def connect(auth):
     room = session.get("room")
