@@ -1,3 +1,6 @@
 Flask
+Flask-SocketIO
+eventlet
 gunicorn
-flask-socketio
+redis
+flask-socketio[redis]

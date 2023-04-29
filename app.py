@@ -3,11 +3,19 @@ from flask_socketio import SocketIO
 from flask_socketio import join_room, leave_room, send
 import random
 from string import ascii_uppercase
+import os 
 
 # Create app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'key123'
-socketio = SocketIO(app)
+#socketio = SocketIO(app)
+
+# Set up Redis connection
+redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
+redis_store = redis.StrictRedis.from_url(redis_url)
+
+# Initialize SocketIO with Redis message queue
+socketio = SocketIO(app, message_queue=redis_url)
 
 
 ### Cafe
@@ -45,9 +53,6 @@ def order():
 
 ### Chat
 
-# List to store rooms
-rooms = {}
-
 # Chat login page
 @app.route("/index", methods=["POST", "GET"])
 def index():
@@ -57,7 +62,8 @@ def index():
             
         if join != False:
             room = 1234
-            rooms[room] = {"members": 0, "messages": []}
+            redis_store.hset(f"room:{room}", "members", 0)
+            redis_store.lpush(f"room:{room}:messages", [])
             session["room"] = room
             session["name"] = name
         return redirect(url_for("room"))
@@ -68,13 +74,15 @@ def index():
 @app.route("/chat")
 def room():
     room = session.get("room")
+    messages = redis_store.lrange(f"room:{room}:messages", 0, -1)
+    messages = [eval(msg.decode("utf-8")) for msg in messages]
 
-    return render_template("chat.html", code=room, messages=rooms[room]["messages"])
+    return render_template("chat.html", code=room, messages=messages)
 
 @socketio.on("message")
 def message(data):
     room = session.get("room")
-    if room not in rooms:
+    if not redis_store.exists(f"room:{room}"):
         return 
     
     content = {
@@ -82,7 +90,7 @@ def message(data):
         "message": data["data"]
     }
     send(content, to=room)
-    rooms[room]["messages"].append(content)
+    redis_store.rpush(f"room:{room}:messages", str(content))
     print(f"{session.get('name')} said: {data['data']}")
 
 @socketio.on("connect")
@@ -91,13 +99,13 @@ def connect(auth):
     name = session.get("name")
     if not room or not name:
         return
-    if room not in rooms:
+    if not redis_store.exists(f"room:{room}"):
         leave_room(room)
         return
     
     join_room(room)
     send({"name": name, "message": "(has entered the room)"}, to=room)
-    rooms[room]["members"] += 1
+    redis_store.hincrby(f"room:{room}", "members", 1)
     print(f"{name} joined room {room}")
 
 @socketio.on("disconnect")
@@ -106,11 +114,78 @@ def disconnect():
     name = session.get("name")
     leave_room(room)
 
-    if room in rooms:
-        rooms[room]["members"] -= 1
+    if redis_store.exists(f"room:{room}"):
+        redis_store.hincrby(f"room:{room}", "members", -1)
     
     send({"name": name, "message": "(has left the room)"}, to=room)
     print(f"{name} has left the room {room}")
+
+# List to store rooms
+#rooms = {}
+#
+## Chat login page
+#@app.route("/index", methods=["POST", "GET"])
+#def index():
+#    if request.method == "POST":
+#        name = request.form.get("name")
+#        join = request.form.get("join", False)
+#            
+#        if join != False:
+#            room = 1234
+#            rooms[room] = {"members": 0, "messages": []}
+#            session["room"] = room
+#            session["name"] = name
+#        return redirect(url_for("room"))
+#
+#    return render_template("index.html")
+#
+## Chat page
+#@app.route("/chat")
+#def room():
+#    room = session.get("room")
+#
+#    return render_template("chat.html", code=room, messages=rooms[room]["messages"])
+#
+#@socketio.on("message")
+#def message(data):
+#    room = session.get("room")
+#    if room not in rooms:
+#        return 
+#    
+#    content = {
+#        "name": session.get("name"),
+#        "message": data["data"]
+#    }
+#    send(content, to=room)
+#    rooms[room]["messages"].append(content)
+#    print(f"{session.get('name')} said: {data['data']}")
+#
+#@socketio.on("connect")
+#def connect(auth):
+#    room = session.get("room")
+#    name = session.get("name")
+#    if not room or not name:
+#        return
+#    if room not in rooms:
+#        leave_room(room)
+#        return
+#    
+#    join_room(room)
+#    send({"name": name, "message": "(has entered the room)"}, to=room)
+#    rooms[room]["members"] += 1
+#    print(f"{name} joined room {room}")
+#
+#@socketio.on("disconnect")
+#def disconnect():
+#    room = session.get("room")
+#    name = session.get("name")
+#    leave_room(room)
+#
+#    if room in rooms:
+#        rooms[room]["members"] -= 1
+#    
+#    send({"name": name, "message": "(has left the room)"}, to=room)
+#    print(f"{name} has left the room {room}")
 
 
 # Run app
