@@ -84,6 +84,7 @@ def room():
 
 @socketio.on("message")
 def message(data):
+    print('received message', data)
     room = session.get("room")
     if not redis_store.exists(f"room:{room}"):
         return 
