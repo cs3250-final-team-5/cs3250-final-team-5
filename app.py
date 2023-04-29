@@ -76,9 +76,11 @@ def index():
 @app.route("/chat")
 def room():
     room = session.get("room")
+    name = session.get("name")
     messages = json.loads(redis_store.hget(f"room:{room}", "messages"))
 
-    return render_template("chat.html", code=room, messages=messages)
+    return render_template("chat.html", code=room, messages=messages, name=name)
+
 
 @socketio.on("message")
 def message(data):
