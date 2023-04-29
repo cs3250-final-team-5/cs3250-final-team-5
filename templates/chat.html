@@ -40,8 +40,9 @@
   };
 
   socketio.on("message", (data) => {
-    createMessage(data.name, data.message);
+  createMessage(data["name"], data["message"]);
   });
+
 
 const sendMessage = () => {
   const message = document.getElementById("message");
